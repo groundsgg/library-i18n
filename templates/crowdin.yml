@@ -1,0 +1,19 @@
+# Copy to the root of a plugin that ships message bundles.
+#
+# `preserve_hierarchy` keeps each plugin module's bundle a separate file in
+# Crowdin, so a translator sees "plugin-social / velocity" rather than one
+# undifferentiated pile of keys.
+
+project_id_env: CROWDIN_PROJECT_ID
+api_token_env: CROWDIN_PERSONAL_TOKEN
+
+preserve_hierarchy: true
+
+files:
+  - source: /**/src/main/resources/**/messages.properties
+    # %two_letters_code% yields `de`, not `de_DE`. ResourceBundle resolves a
+    # client asking for de_DE down to the `de` bundle on its own; shipping
+    # region variants we do not translate separately just doubles the files.
+    translation: /%original_path%/%file_name%_%two_letters_code%.%file_extension%
+    # Properties values are MiniMessage. Tags are markup, not prose.
+    escape_special_characters: 0

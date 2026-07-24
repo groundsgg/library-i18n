@@ -1,0 +1,31 @@
+# Copy to .github/workflows/i18n.yml in a plugin that ships message bundles.
+
+name: i18n
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "**/messages.properties"
+      - "crowdin.yml"
+  # Translators work on their own clock; pull whatever is finished each morning.
+  schedule:
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  crowdin:
+    uses: groundsgg/library-i18n/.github/workflows/crowdin-sync.yml@main
+    secrets: inherit
+    permissions:
+      contents: write
+      pull-requests: write
+    with:
+      # A push only needs to publish new source strings; the scheduled run does
+      # the download. Both default to true, so a manual dispatch does both.
+      download_translations: ${{ github.event_name != 'push' }}
