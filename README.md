@@ -16,7 +16,7 @@ announced `de_DE` on login gets English anyway, and the only way to change the w
 is a code change by someone who can build a plugin.
 
 This library separates the three. The call site names a message; the bundle holds the
-wording and the colour; Crowdin holds the translations.
+wording and the colour; Weblate holds the translations.
 
 ```kotlin
 messages.send(source, SocialMessage.PLAYER_NOT_FOUND)
@@ -105,34 +105,33 @@ is a release of this library followed by a version bump in every plugin that dep
 on it. Strings change far more often than translation machinery does, so they belong
 on the faster release train.
 
-Crowdin holds many source files in one project, so translators still see a single
-place to work.
+Weblate ([weblate.grounds.gg](https://weblate.grounds.gg)) holds every plugin's source
+file in one project, so translators still see a single place to work.
 
-## Crowdin wiring
+## Weblate wiring
 
-Two files per plugin, both in `templates/`:
+Translations are managed in self-hosted **Weblate**, in the core cluster, deployed by
+Pulumi (`grounds-pulumi`, `core/src/platform/weblate.ts`). It replaced Crowdin.
 
-| Copy | To | Does |
-|---|---|---|
-| `templates/crowdin.yml` | repository root | tells Crowdin which files are sources and where translations land |
-| `templates/i18n.yml` | `.github/workflows/i18n.yml` | uploads sources on push, opens a PR with finished translations daily |
+The difference that shapes everything: **Weblate is the git client.** It clones the
+plugin repo itself, watches for new English strings, and when a language is finished it
+commits `messages_<lang>.properties` to a branch and opens a pull request back. So
+there is **no config file in the plugin repo and no CI sync workflow** — a component is
+a record inside Weblate, created once:
 
-The workflow calls the reusable one in this repository, so the Crowdin action is
-configured in exactly one place:
-
-```yaml
-jobs:
-  crowdin:
-    uses: groundsgg/library-i18n/.github/workflows/crowdin-sync.yml@main
-    secrets: inherit
+```sh
+export WEBLATE_API_TOKEN=...   # Weblate Settings -> API access
+scripts/weblate-onboard.sh plugin-social velocity/src/main/resources/gg/grounds/social
 ```
 
-One-time, by hand: create the Crowdin project and set `CROWDIN_PROJECT_ID` and
-`CROWDIN_PERSONAL_TOKEN` as **organisation** secrets, so `secrets: inherit` finds
-them in every plugin repository.
+Full setup — the one-time platform bits (bot token, org webhook) and the per-plugin
+onboarding — is in [`docs/weblate.md`](docs/weblate.md).
 
-Translations are never uploaded from the repository, only downloaded into it. A
-hand-edited `messages_de.properties` would otherwise overwrite a translator's work.
+Two things are worth knowing here. Weblate pushes translations back as a PR, so a
+hand-edited `messages_<lang>.properties` is reconciled by its git client, not a source
+of truth — edit English in the repo, everything else in Weblate. And the deployment has
+**no SMTP**: Weblate sends no mail at all, so a finished translation announces itself as
+a pull request, not an email. Watch the PR, not an inbox.
 
 ## Dependency
 
@@ -154,12 +153,12 @@ reverse is not, which is why the compile target is deliberately old.
 
 - **Plurals.** `"3 friends online"` needs ICU plural rules to be right in Polish or
   Russian, and a `count == 1` shortcut is wrong in a way that only shows up for
-  languages nobody on the team reads. Crowdin exports ICU; add it when a plural
-  string actually appears, not before.
+  languages nobody on the team reads. Weblate supports ICU MessageFormat; add it when a
+  plural string actually appears, not before.
 - **Hot reload.** Fixing a typo currently needs a plugin release. If that becomes the
-  common case, the shape is a Crowdin webhook publishing bundles to object storage and
-  a NATS event telling servers to reload — with the classpath bundle staying as the
-  fallback. Still no service on the send path.
+  common case, the shape is a Weblate webhook (or add-on) publishing bundles to object
+  storage and a NATS event telling servers to reload — with the classpath bundle
+  staying as the fallback. Still no service on the send path.
 - **A translation service.** Rendering happens per player, per message, in the chat
   path. A network call there buys nothing that a few kilobytes of properties files in
   memory do not already give.
