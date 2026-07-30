@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/groundsgg/library-i18n/compare/v0.1.0...v0.1.1) (2026-07-30)
+
+
+### Bug Fixes
+
+* target Java 21 bytecode so plugins can consume it ([#4](https://github.com/groundsgg/library-i18n/issues/4)) ([15f501b](https://github.com/groundsgg/library-i18n/commit/15f501b166f6d2cfb6b3afd41d58577c67f287c5))
+
 ## 0.1.0 (2026-07-30)
 
 
