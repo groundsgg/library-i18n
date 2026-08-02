@@ -55,6 +55,43 @@ messages.send(player, SocialMessage.FRIEND_REQUEST_SENT, "target" to target.user
 `render(key, locale, …)` returns the `Component` instead, for lore, inventory titles,
 book pages and anything else that is not chat.
 
+### Every system message wears `[Grounds]`
+
+`send` puts the platform's tag in front of the line:
+
+```
+[Grounds] You are now friends with Ada!
+```
+
+Nothing at the call site opts in. A plugin conforms by doing nothing, which is the only
+version of "everyone follows the house style" that survives the tenth plugin — the
+alternative is a `PREFIX` constant per repo, which is how chat ended up with `[Party]`,
+`[STAFF]` and nothing at all, all at once.
+
+The tag is brand mint on dark grey brackets, and it is deliberately not configurable per
+plugin. Colour never bleeds into the message: the line is an uncoloured root with the
+prefix and the message as siblings, so a `<red>` error stays red and an uncoloured
+message does not turn mint.
+
+Three entry points, and the difference between them is only who is talking:
+
+| Call | Prefixed | For |
+| --- | --- | --- |
+| `send` | yes | the platform talking to a player — confirmations, errors, announcements |
+| `sendUnprefixed` | no | a player talking — chat lines, private messages, staff chat |
+| `render` | no | not chat at all — lore, titles, inventory names, book pages |
+
+A bundle that holds only conversation lines can opt out once, at construction, instead of
+at every call:
+
+```kotlin
+Translations.forBundle(bundle, loader, prefix = Prefix.NONE)
+```
+
+Which lines are conversations is `plugin-chat`'s call, not each plugin's: it owns the
+channels and defines their shapes. Everything else is the platform speaking and is
+prefixed.
+
 ### Arguments are unparsed by default
 
 `"target" to name` fills `<target>`. A `String` argument is inserted as **unparsed**
