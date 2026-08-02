@@ -136,6 +136,8 @@ private constructor(
          * @param fallback language of the untranslated source bundle (`messages.properties`).
          * @param prefix what [send] puts in front of the line. Leave it alone unless the bundle
          *   holds conversation lines rather than system output.
+         * @param miniMessage defaults to an instance that resolves the [Palette] tags (`<danger>`,
+         *   `<muted>`, …) on top of the standard ones. Replacing it takes the palette away.
          */
         @JvmStatic
         @JvmOverloads
@@ -144,9 +146,18 @@ private constructor(
             classLoader: ClassLoader,
             fallback: Locale = Locale.ENGLISH,
             localeResolver: LocaleResolver = LocaleResolver.FROM_AUDIENCE,
-            miniMessage: MiniMessage = MiniMessage.miniMessage(),
+            miniMessage: MiniMessage = PALETTE_MINI_MESSAGE,
             prefix: Prefix = Prefix.GROUNDS,
         ): Translations =
             Translations(baseName, classLoader, fallback, miniMessage, localeResolver, prefix)
+
+        /**
+         * MiniMessage with the Grounds semantic colours added.
+         *
+         * Standard tags keep working, so no bundle breaks. The point is that `<danger>` is now the
+         * shorter thing to write than `<red>`, and the wrong one is visible next to the right one.
+         */
+        private val PALETTE_MINI_MESSAGE: MiniMessage =
+            MiniMessage.builder().editTags { it.resolver(Palette.TAGS) }.build()
     }
 }

@@ -1,8 +1,6 @@
 package gg.grounds.i18n
 
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.format.NamedTextColor
-import net.kyori.adventure.text.format.TextColor
 
 /**
  * The tag in front of a line the platform says to a player.
@@ -25,21 +23,19 @@ class Prefix private constructor(private val component: Component) {
         else Component.empty().append(component).append(message)
 
     companion object {
-        /** Brand mint (`--mint-400`), the one colour that says "this is Grounds speaking". */
-        private val BRAND: TextColor = TextColor.fromHexString("#4accc2")!!
-
         /**
          * `[Grounds] ` — every system message on every platform.
          *
-         * Deliberately not configurable per plugin: a prefix that each plugin picks is the state
-         * this replaced.
+         * The word is [Palette.ACCENT_DEEP], not [Palette.ACCENT]: the bright mint means "you can
+         * click this", and a tag on every single line would spend it on decoration. Deliberately
+         * not configurable per plugin — a prefix each plugin picks is the state this replaced.
          */
         @JvmField
         val GROUNDS: Prefix =
             Prefix(
-                Component.text("[", NamedTextColor.DARK_GRAY)
-                    .append(Component.text("Grounds", BRAND))
-                    .append(Component.text("] ", NamedTextColor.DARK_GRAY))
+                Component.text("[", Palette.TEXT_FAINT)
+                    .append(Component.text("Grounds", Palette.ACCENT_DEEP))
+                    .append(Component.text("] ", Palette.TEXT_FAINT))
             )
 
         /**

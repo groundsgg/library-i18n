@@ -92,6 +92,43 @@ Which lines are conversations is `plugin-chat`'s call, not each plugin's: it own
 channels and defines their shapes. Everything else is the platform speaking and is
 prefixed.
 
+### Colour comes from the palette, not from taste
+
+Bundle values are MiniMessage, so a translator picks the colour. Left alone that means
+`<red>`, `<green>`, `<gray>` — sixteen colours from 2011 that have nothing to do with the
+Grounds design tokens. `Translations` therefore renders with the semantic tags added:
+
+```properties
+player.not-found=<danger>Player not found.
+friend.request.sent=<success>Friend request sent to <target>.
+friend.list.offline=<muted> (offline)
+```
+
+| Tag | Token | Use |
+| --- | --- | --- |
+| `<text>` | `--text` | body text |
+| `<muted>` | `--text-muted` | the message itself, hints, anything subordinate |
+| `<faint>` | `--text-faint` | brackets, punctuation |
+| `<accent>` | `--accent` | **interactive text only** — links, click-to-run |
+| `<accent-deep>` | `--accent-deep` | static brand marks, e.g. the `[Grounds]` tag |
+| `<success>` `<warning>` `<danger>` `<info>` | state colours | what they say |
+
+These are the **dark** set of tokens. There is no light set here: a client cannot tell us
+what its chat background looks like, and over a Minecraft world there is one right answer.
+
+Two consequences worth knowing. `<danger>` is a warm salmon, not a vivid red — over a
+near-black ground the state colours sit at L 0.80, the lowest lightness at which all four
+still clear APCA Lc 60, and sRGB has nothing redder up there. And `<accent>` is reserved
+for text you can click; the `[Grounds]` tag uses `<accent-deep>` instead, because an
+accent on every single line is wallpaper and then nothing reads as the thing to act on.
+
+The standard tags still parse, so no existing bundle breaks. What changed is that `<red>`
+now reads as a deviation sitting next to `<danger>`, which is the only enforcement that
+survives contact with a translator.
+
+`Palette` also exposes the same colours as `TextColor` constants, for code that builds a
+`Component` by hand rather than through a bundle.
+
 ### Arguments are unparsed by default
 
 `"target" to name` fills `<target>`. A `String` argument is inserted as **unparsed**
