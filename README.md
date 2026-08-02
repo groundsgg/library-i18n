@@ -55,6 +55,80 @@ messages.send(player, SocialMessage.FRIEND_REQUEST_SENT, "target" to target.user
 `render(key, locale, …)` returns the `Component` instead, for lore, inventory titles,
 book pages and anything else that is not chat.
 
+### Every system message wears `[Grounds]`
+
+`send` puts the platform's tag in front of the line:
+
+```
+[Grounds] You are now friends with Ada!
+```
+
+Nothing at the call site opts in. A plugin conforms by doing nothing, which is the only
+version of "everyone follows the house style" that survives the tenth plugin — the
+alternative is a `PREFIX` constant per repo, which is how chat ended up with `[Party]`,
+`[STAFF]` and nothing at all, all at once.
+
+The tag is brand mint on dark grey brackets, and it is deliberately not configurable per
+plugin. Colour never bleeds into the message: the line is an uncoloured root with the
+prefix and the message as siblings, so a `<red>` error stays red and an uncoloured
+message does not turn mint.
+
+Three entry points, and the difference between them is only who is talking:
+
+| Call | Prefixed | For |
+| --- | --- | --- |
+| `send` | yes | the platform talking to a player — confirmations, errors, announcements |
+| `sendUnprefixed` | no | a player talking — chat lines, private messages, staff chat |
+| `render` | no | not chat at all — lore, titles, inventory names, book pages |
+
+A bundle that holds only conversation lines can opt out once, at construction, instead of
+at every call:
+
+```kotlin
+Translations.forBundle(bundle, loader, prefix = Prefix.NONE)
+```
+
+Which lines are conversations is `plugin-chat`'s call, not each plugin's: it owns the
+channels and defines their shapes. Everything else is the platform speaking and is
+prefixed.
+
+### Colour comes from the palette, not from taste
+
+Bundle values are MiniMessage, so a translator picks the colour. Left alone that means
+`<red>`, `<green>`, `<gray>` — sixteen colours from 2011 that have nothing to do with the
+Grounds design tokens. `Translations` therefore renders with the semantic tags added:
+
+```properties
+player.not-found=<danger>Player not found.
+friend.request.sent=<success>Friend request sent to <target>.
+friend.list.offline=<muted> (offline)
+```
+
+| Tag | Token | Use |
+| --- | --- | --- |
+| `<text>` | `--text` | body text |
+| `<muted>` | `--text-muted` | the message itself, hints, anything subordinate |
+| `<faint>` | `--text-faint` | brackets, punctuation |
+| `<accent>` | `--accent` | **interactive text only** — links, click-to-run |
+| `<accent-deep>` | `--accent-deep` | static brand marks, e.g. the `[Grounds]` tag |
+| `<success>` `<warning>` `<danger>` `<info>` | state colours | what they say |
+
+These are the **dark** set of tokens. There is no light set here: a client cannot tell us
+what its chat background looks like, and over a Minecraft world there is one right answer.
+
+Two consequences worth knowing. `<danger>` is a warm salmon, not a vivid red — over a
+near-black ground the state colours sit at L 0.80, the lowest lightness at which all four
+still clear APCA Lc 60, and sRGB has nothing redder up there. And `<accent>` is reserved
+for text you can click; the `[Grounds]` tag uses `<accent-deep>` instead, because an
+accent on every single line is wallpaper and then nothing reads as the thing to act on.
+
+The standard tags still parse, so no existing bundle breaks. What changed is that `<red>`
+now reads as a deviation sitting next to `<danger>`, which is the only enforcement that
+survives contact with a translator.
+
+`Palette` also exposes the same colours as `TextColor` constants, for code that builds a
+`Component` by hand rather than through a bundle.
+
 ### Arguments are unparsed by default
 
 `"target" to name` fills `<target>`. A `String` argument is inserted as **unparsed**

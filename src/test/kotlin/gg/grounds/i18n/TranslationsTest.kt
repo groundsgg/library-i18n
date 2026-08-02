@@ -107,14 +107,14 @@ class TranslationsTest {
     fun `send picks the language the audience announced`() {
         val audience = FakeAudience(Locale.GERMANY)
         translations.send(audience, TestMessage.GREETING, "player" to "Ada")
-        assertEquals(listOf("Hallo, Ada!"), audience.sent.map(::plain))
+        assertEquals(listOf("[Grounds] Hallo, Ada!"), audience.sent.map(::plain))
     }
 
     @Test
     fun `an audience with no locale gets the fallback`() {
         val audience = FakeAudience(null)
         translations.send(audience, TestMessage.GREETING, "player" to "Ada")
-        assertEquals(listOf("Hello, Ada!"), audience.sent.map(::plain))
+        assertEquals(listOf("[Grounds] Hello, Ada!"), audience.sent.map(::plain))
     }
 
     @Test
@@ -127,6 +127,34 @@ class TranslationsTest {
             )
         val audience = FakeAudience(Locale.ENGLISH)
         overriding.send(audience, TestMessage.GREETING, "player" to "Ada")
-        assertEquals(listOf("Hallo, Ada!"), audience.sent.map(::plain))
+        assertEquals(listOf("[Grounds] Hallo, Ada!"), audience.sent.map(::plain))
+    }
+
+    @Test
+    fun `sendUnprefixed leaves the line bare`() {
+        val audience = FakeAudience(Locale.ENGLISH)
+        translations.sendUnprefixed(audience, TestMessage.GREETING, "player" to "Ada")
+        assertEquals(listOf("Hello, Ada!"), audience.sent.map(::plain))
+    }
+
+    @Test
+    fun `render is never prefixed - it also feeds lore and titles`() {
+        val rendered = translations.render(TestMessage.GREETING, Locale.ENGLISH, "player" to "Ada")
+        assertEquals("Hello, Ada!", plain(rendered))
+    }
+
+    @Test
+    fun `a bundle of conversation lines opts out at construction`() {
+        val bare = Translations.forBundle(BUNDLE, javaClass.classLoader, prefix = Prefix.NONE)
+        val audience = FakeAudience(Locale.ENGLISH)
+        bare.send(audience, TestMessage.GREETING, "player" to "Ada")
+        assertEquals(listOf("Hello, Ada!"), audience.sent.map(::plain))
+    }
+
+    @Test
+    fun `the prefix does not bleed its colour into the message`() {
+        val audience = FakeAudience(Locale.GERMAN)
+        translations.send(audience, TestMessage.GREETING, "player" to "Ada")
+        assertTrue(hasColour(audience.sent.single(), NamedTextColor.GREEN))
     }
 }

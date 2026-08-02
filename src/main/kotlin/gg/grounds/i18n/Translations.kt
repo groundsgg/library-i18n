@@ -26,6 +26,11 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
  * ```
  *
  * Bundle values are MiniMessage, so colour lives with the translator rather than in the call site.
+ *
+ * [send] puts [Prefix.GROUNDS] in front of the line. The three entry points differ only in that:
+ * [send] is the platform talking to a player and is prefixed, [sendUnprefixed] is a conversation
+ * line and is not, and [render] returns the bare component for lore, titles and inventory names —
+ * none of which are chat and none of which want a tag.
  */
 class Translations
 private constructor(
@@ -34,6 +39,7 @@ private constructor(
     private val fallback: Locale,
     private val miniMessage: MiniMessage,
     private val localeResolver: LocaleResolver,
+    private val prefix: Prefix,
 ) {
 
     private val warnedMissing = ConcurrentHashMap.newKeySet<String>()
@@ -42,7 +48,7 @@ private constructor(
     fun localeOf(audience: Audience): Locale = localeResolver.localeOf(audience) ?: fallback
 
     /**
-     * Renders [key] in [locale].
+     * Renders [key] in [locale], without a prefix.
      *
      * Each argument becomes a MiniMessage placeholder: `"target" to name` fills `<target>`. A
      * [ComponentLike] argument is inserted as-is; anything else is inserted as **unparsed** text,
@@ -56,12 +62,29 @@ private constructor(
         return miniMessage.deserialize(pattern, TagResolver.resolver(args.map(::resolverFor)))
     }
 
-    /** Renders [key] in the language [audience] reads. */
+    /** Renders [key] in the language [audience] reads, without a prefix. */
     fun render(key: MessageKey, audience: Audience, vararg args: Pair<String, Any>): Component =
         render(key, localeOf(audience), *args)
 
-    /** Renders [key] for [audience] and sends it. */
+    /**
+     * Renders [key] for [audience] and sends it, prefixed.
+     *
+     * This is the platform talking, so the line carries the platform's tag — `[Grounds]` unless the
+     * instance was built with another [Prefix]. Nothing at the call site opts in; that is the
+     * point.
+     */
     fun send(audience: Audience, key: MessageKey, vararg args: Pair<String, Any>) {
+        audience.sendMessage(prefix.applyTo(render(key, localeOf(audience), *args)))
+    }
+
+    /**
+     * Renders [key] for [audience] and sends it **without** the prefix.
+     *
+     * For lines that are not the platform speaking: a chat message, a private message, staff chat.
+     * A system message sent through here is a bug a reviewer can see, which is why the exception is
+     * a different method rather than a flag.
+     */
+    fun sendUnprefixed(audience: Audience, key: MessageKey, vararg args: Pair<String, Any>) {
         audience.sendMessage(render(key, localeOf(audience), *args))
     }
 
@@ -111,6 +134,10 @@ private constructor(
          * @param classLoader **the calling plugin's** loader. Paper and Velocity give every plugin
          *   its own; passing someone else's finds no bundle.
          * @param fallback language of the untranslated source bundle (`messages.properties`).
+         * @param prefix what [send] puts in front of the line. Leave it alone unless the bundle
+         *   holds conversation lines rather than system output.
+         * @param miniMessage defaults to an instance that resolves the [Palette] tags (`<danger>`,
+         *   `<muted>`, …) on top of the standard ones. Replacing it takes the palette away.
          */
         @JvmStatic
         @JvmOverloads
@@ -119,7 +146,18 @@ private constructor(
             classLoader: ClassLoader,
             fallback: Locale = Locale.ENGLISH,
             localeResolver: LocaleResolver = LocaleResolver.FROM_AUDIENCE,
-            miniMessage: MiniMessage = MiniMessage.miniMessage(),
-        ): Translations = Translations(baseName, classLoader, fallback, miniMessage, localeResolver)
+            miniMessage: MiniMessage = PALETTE_MINI_MESSAGE,
+            prefix: Prefix = Prefix.GROUNDS,
+        ): Translations =
+            Translations(baseName, classLoader, fallback, miniMessage, localeResolver, prefix)
+
+        /**
+         * MiniMessage with the Grounds semantic colours added.
+         *
+         * Standard tags keep working, so no bundle breaks. The point is that `<danger>` is now the
+         * shorter thing to write than `<red>`, and the wrong one is visible next to the right one.
+         */
+        private val PALETTE_MINI_MESSAGE: MiniMessage =
+            MiniMessage.builder().editTags { it.resolver(Palette.TAGS) }.build()
     }
 }
