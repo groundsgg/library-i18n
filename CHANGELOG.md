@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.2.0](https://github.com/groundsgg/library-i18n/compare/v0.1.1...v0.2.0) (2026-08-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* `send` prefixes its output. Consumers that already emit conversation lines through a bundle must construct with `prefix = Prefix.NONE` or switch those call sites to `sendUnprefixed`.
+
+### Features
+
+* prefix every system message with [Grounds] ([#6](https://github.com/groundsgg/library-i18n/issues/6)) ([616cfdd](https://github.com/groundsgg/library-i18n/commit/616cfddce33d56d1c811f5703df60d4acfd5daf0))
+
 ## [0.1.1](https://github.com/groundsgg/library-i18n/compare/v0.1.0...v0.1.1) (2026-07-30)
 
 
