@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/groundsgg/library-i18n/compare/v0.3.0...v0.4.0) (2026-10-14)
+
+
+### Features
+
+* **i18n:** centralize localized Minecraft chat layouts ([#10](https://github.com/groundsgg/library-i18n/issues/10)) ([bbbfd97](https://github.com/groundsgg/library-i18n/commit/bbbfd973993e4e76698e75c218b21370e4d43ca7))
+
 ## [0.3.0](https://github.com/groundsgg/library-i18n/compare/v0.2.0...v0.3.0) (2026-10-14)
 
 
