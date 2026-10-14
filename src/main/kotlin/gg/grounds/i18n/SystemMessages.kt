@@ -21,15 +21,16 @@ object SystemMessages {
     @JvmOverloads
     fun format(
         message: Component,
-        category: SystemCategory = SystemCategory.INFO,
+        category: SystemCategory = SystemCategory.GENERAL,
         logoReady: Boolean = false,
         locale: Locale = Locale.ENGLISH,
+        level: SystemLevel = SystemLevel.INFO,
     ): Component {
-        val categoryColor =
-            when (category) {
-                SystemCategory.SUCCESS -> TextColor.color(0xA4CE87)
-                SystemCategory.WARNING -> TextColor.color(0xF0C36A)
-                SystemCategory.ERROR -> TextColor.color(0xF28B82)
+        val levelColor =
+            when (level) {
+                SystemLevel.SUCCESS -> TextColor.color(0xA4CE87)
+                SystemLevel.WARNING -> TextColor.color(0xF0C36A)
+                SystemLevel.ERROR -> TextColor.color(0xF28B82)
                 else -> SECONDARY
             }
         val bundle =
@@ -54,8 +55,9 @@ object SystemMessages {
                     Placeholder.component("brand", Component.text(bundle.getString("brand"), GOLD)),
                     Placeholder.component(
                         "category",
-                        Component.text(category.label(locale), categoryColor),
+                        Component.text(category.label(locale), levelColor),
                     ),
+                    Placeholder.component("level", Component.text(level.label(locale), levelColor)),
                     Placeholder.component("logo", if (logoReady) logo else Component.empty()),
                 )
                 .colorIfAbsent(SECONDARY)

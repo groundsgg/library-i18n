@@ -16,7 +16,7 @@ class SystemMessagesTest {
     fun `localized layout can reorder brand and category`() {
         val line =
             SystemMessages.format(Component.text("Hello"), locale = Locale.forLanguageTag("zz"))
-        assertEquals("Info · [Grounds] › Hello", plain(line))
+        assertEquals("General (Info) · [Grounds] › Hello", plain(line))
     }
 
     @Test
@@ -40,13 +40,13 @@ class SystemMessagesTest {
                 override val id = "greeting"
             }
         messages.send(audience, key, "player" to "Ada")
-        assertTrue(plain(sent).startsWith("[Grounds] Info › "))
+        assertTrue(plain(sent).startsWith("[Grounds] General › "))
         ready = true
         messages.send(audience, key, "player" to "Ada")
-        assertTrue(plain(sent).startsWith("\uE100 Grounds · Info › "))
+        assertTrue(plain(sent).startsWith("\uE100 Grounds · General › "))
         ready = false
         messages.sendRendered(audience, key, Component.text("Bye"))
-        assertEquals("[Grounds] Info › Bye", plain(sent))
+        assertEquals("[Grounds] General › Bye", plain(sent))
     }
 
     private fun plain(component: Component) =
@@ -55,8 +55,14 @@ class SystemMessagesTest {
     @Test
     fun `German errors carry the localized category and preserve clickable content`() {
         val content = Component.text("Retry").clickEvent(ClickEvent.suggestCommand("/queue"))
-        val line = SystemMessages.format(content, SystemCategory.ERROR, locale = Locale.GERMAN)
-        assertEquals("[Grounds] Fehler › Retry", plain(line))
+        val line =
+            SystemMessages.format(
+                content,
+                SystemCategory.FRIENDS,
+                locale = Locale.GERMAN,
+                level = SystemLevel.ERROR,
+            )
+        assertEquals("[Grounds] Freunde › Retry", plain(line))
         assertSame(content, line.children().last())
         assertEquals(content.clickEvent(), line.children().last().clickEvent())
     }
@@ -78,7 +84,8 @@ class SystemMessagesTest {
         val key =
             object : SystemMessageKey {
                 override val id = "greeting"
-                override val category = SystemCategory.SUCCESS
+                override val category = SystemCategory.PARTY
+                override val level = SystemLevel.SUCCESS
             }
         var sent: Component = Component.empty()
         val audience =
@@ -89,7 +96,7 @@ class SystemMessagesTest {
             }
         val messages = Translations.forBundle("gg.grounds.i18n.testmessages", javaClass.classLoader)
         messages.send(audience, key, "player" to "<red>Ada</red>")
-        assertEquals("[Grounds] Success › Hello, <red>Ada</red>!", plain(sent))
+        assertEquals("[Grounds] Party › Hello, <red>Ada</red>!", plain(sent))
         assertEquals("Hello, Ada!", plain(messages.render(key, Locale.ENGLISH, "player" to "Ada")))
     }
 }

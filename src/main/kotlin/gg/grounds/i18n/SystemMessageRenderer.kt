@@ -15,9 +15,10 @@ fun interface SystemMessageRenderer {
             SystemMessageRenderer { audience, key, message, locale ->
                 SystemMessages.format(
                     message,
-                    (key as? SystemMessageKey)?.category ?: SystemCategory.INFO,
+                    (key as? SystemMessageKey)?.category ?: SystemCategory.GENERAL,
                     logoReady = isReady(audience),
                     locale = locale,
+                    level = (key as? SystemMessageKey)?.level ?: SystemLevel.INFO,
                 )
             }
 
@@ -25,8 +26,9 @@ fun interface SystemMessageRenderer {
         val TEXT_ONLY = SystemMessageRenderer { _, key, message, locale ->
             SystemMessages.format(
                 message,
-                (key as? SystemMessageKey)?.category ?: SystemCategory.INFO,
+                (key as? SystemMessageKey)?.category ?: SystemCategory.GENERAL,
                 locale = locale,
+                level = (key as? SystemMessageKey)?.level ?: SystemLevel.INFO,
             )
         }
     }

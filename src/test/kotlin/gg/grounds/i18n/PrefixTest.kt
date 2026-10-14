@@ -15,7 +15,7 @@ class PrefixTest {
     @Test
     fun `the platform tag reads as one word with a trailing space`() {
         val line = Prefix.GROUNDS.applyTo(Component.text("Friend request sent."))
-        assertEquals("[Grounds] Info › Friend request sent.", plain(line))
+        assertEquals("[Grounds] General › Friend request sent.", plain(line))
     }
 
     @Test

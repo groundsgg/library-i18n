@@ -3,12 +3,9 @@ package gg.grounds.i18n
 import java.util.Locale
 import java.util.ResourceBundle
 
-/** Meaning of a system message, independent of its translated text or text colour. */
+/** Subject context of a system message, independent of status and visual treatment. */
 enum class SystemCategory {
-    INFO,
-    SUCCESS,
-    WARNING,
-    ERROR,
+    GENERAL,
     FRIENDS,
     PARTY,
     MATCH,
@@ -29,4 +26,8 @@ enum class SystemCategory {
 /** Optional metadata for existing MessageKey implementations; older keys remain valid. */
 interface SystemMessageKey : MessageKey {
     val category: SystemCategory
+        get() = SystemCategory.GENERAL
+
+    val level: SystemLevel
+        get() = SystemLevel.INFO
 }
