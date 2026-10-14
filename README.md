@@ -16,7 +16,7 @@ announced `de_DE` on login gets English anyway, and the only way to change the w
 is a code change by someone who can build a plugin.
 
 This library separates the three. The call site names a message; the bundle holds the
-wording and the colour; Weblate holds the translations.
+wording and the colour, in English and in every language a player can pick.
 
 ```kotlin
 messages.send(source, SocialMessage.PLAYER_NOT_FOUND)
@@ -179,33 +179,33 @@ is a release of this library followed by a version bump in every plugin that dep
 on it. Strings change far more often than translation machinery does, so they belong
 on the faster release train.
 
-Weblate ([weblate.grounds.gg](https://weblate.grounds.gg)) holds every plugin's source
-file in one project, so translators still see a single place to work.
+## Translations
 
-## Weblate wiring
+**In the same PR as the English line.** Whoever adds a key to `messages.properties` adds
+it to every `messages_<lang>.properties` too — one per language in `SupportedLocales.ALL`
+other than English. There is no translation tool and no sync job; the bundles in the
+repo are the whole truth, and reviewing a translation is reviewing a diff.
 
-Translations are managed in self-hosted **Weblate**, in the core cluster, deployed by
-Pulumi (`grounds-pulumi`, `core/src/platform/weblate.ts`). It replaced Crowdin.
+`BundleCheck` keeps that honest. One test per plugin:
 
-The difference that shapes everything: **Weblate is the git client.** It clones the
-plugin repo itself, watches for new English strings, and when a language is finished it
-commits `messages_<lang>.properties` to a branch and opens a pull request back. So
-there is **no config file in the plugin repo and no CI sync workflow** — a component is
-a record inside Weblate, created once:
-
-```sh
-export WEBLATE_API_TOKEN=...   # Weblate Settings -> API access
-scripts/weblate-onboard.sh plugin-social velocity/src/main/resources/gg/grounds/social
+```kotlin
+@Test
+fun `messages are complete`() {
+    assertEquals(
+        emptyList(),
+        BundleCheck.problems("gg.grounds.social.messages", javaClass.classLoader, SocialMessage.entries),
+    )
+}
 ```
 
-Full setup — the one-time platform bits (bot token, org webhook) and the per-plugin
-onboarding — is in [`docs/weblate.md`](docs/weblate.md).
+It fails the build when a `MessageKey` has no English line, when a language file is
+missing, lacks a key or keeps one the source dropped, or when a translated line's tags
+differ from the English one — a translated `<target>` renders as nothing, and a
+forgotten one silently drops the player's name.
 
-Two things are worth knowing here. Weblate pushes translations back as a PR, so a
-hand-edited `messages_<lang>.properties` is reconciled by its git client, not a source
-of truth — edit English in the repo, everything else in Weblate. And the deployment has
-**no SMTP**: Weblate sends no mail at all, so a finished translation announces itself as
-a pull request, not an email. Watch the PR, not an inbox.
+Adding a language to `SupportedLocales.ALL` therefore fails every plugin's check until
+that plugin translates it, which is the point: a language a player can pick but no
+bundle speaks reads as broken.
 
 ## Dependency
 
@@ -227,10 +227,10 @@ reverse is not, which is why the compile target is deliberately old.
 
 - **Plurals.** `"3 friends online"` needs ICU plural rules to be right in Polish or
   Russian, and a `count == 1` shortcut is wrong in a way that only shows up for
-  languages nobody on the team reads. Weblate supports ICU MessageFormat; add it when a
-  plural string actually appears, not before.
+  languages nobody on the team reads. Add ICU MessageFormat when a plural string
+  actually appears, not before.
 - **Hot reload.** Fixing a typo currently needs a plugin release. If that becomes the
-  common case, the shape is a Weblate webhook (or add-on) publishing bundles to object
+  common case, the shape is CI publishing bundles to object
   storage and a NATS event telling servers to reload — with the classpath bundle
   staying as the fallback. Still no service on the send path.
 - **A translation service.** Rendering happens per player, per message, in the chat
