@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/groundsgg/library-i18n/compare/v0.2.0...v0.3.0) (2026-10-14)
+
+
+### Features
+
+* add BundleCheck and SupportedLocales for in-repo translations ([#8](https://github.com/groundsgg/library-i18n/issues/8)) ([602b1ab](https://github.com/groundsgg/library-i18n/commit/602b1abadb4953c1f4ceb75b415973c4e786db1b))
+
 ## [0.2.0](https://github.com/groundsgg/library-i18n/compare/v0.1.1...v0.2.0) (2026-08-02)
 
 
