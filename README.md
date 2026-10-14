@@ -28,10 +28,15 @@ messages.send(source, SocialMessage.PLAYER_NOT_FOUND)
 and every one of them is greppable:
 
 ```kotlin
-enum class SocialMessage(override val id: String) : MessageKey {
-    PLAYER_NOT_FOUND("player.not-found"),
-    FRIEND_REQUEST_SENT("friend.request.sent"),
-    FRIEND_REQUEST_RECEIVED("friend.request.received"),
+enum class SocialMessage(
+    override val id: String,
+    override val level: SystemLevel,
+) : SystemMessageKey {
+    PLAYER_NOT_FOUND("player.not-found", SystemLevel.ERROR),
+    FRIEND_REQUEST_SENT("friend.request.sent", SystemLevel.SUCCESS),
+    FRIEND_REQUEST_RECEIVED("friend.request.received", SystemLevel.INFO);
+
+    override val category = SystemCategory.FRIENDS
 }
 ```
 
@@ -60,7 +65,7 @@ book pages and anything else that is not chat.
 `send` puts the platform's tag in front of the line:
 
 ```
-[Grounds] You are now friends with Ada!
+[Grounds] Friends › You are now friends with Ada!
 ```
 
 Nothing at the call site opts in. A plugin conforms by doing nothing, which is the only
@@ -68,10 +73,13 @@ version of "everyone follows the house style" that survives the tenth plugin —
 alternative is a `PREFIX` constant per repo, which is how chat ended up with `[Party]`,
 `[STAFF]` and nothing at all, all at once.
 
-The tag is brand mint on dark grey brackets, and it is deliberately not configurable per
-plugin. Colour never bleeds into the message: the line is an uncoloured root with the
-prefix and the message as siblings, so a `<red>` error stays red and an uncoloured
-message does not turn mint.
+The shared layout bundle controls the brand, localized category, separators and placeholder order. The renderer supplies gold (`#E7B84B`), secondary (`#C1B9AA`) and explicit level colours. Message components retain their click/hover events and colours.
+
+Implement `SystemMessageKey` to give a key an explicit `SystemCategory`. Existing `MessageKey` implementations use `GENERAL` context with `INFO` level. `render` stays unprefixed for menus and connection dialogs.
+
+`forBundleWithSystemRenderer` accepts a host callback without changing existing `forBundle` JVM signatures. Use `SystemMessageRenderer.withLogoReadiness` with verified readiness for the actual recipient. Without that callback the output is text only. Do not infer readiness from a pack being sent or accepted.
+
+`sendRendered` wraps already assembled rich content with the same recipient-specific system header. `ChatLayouts.player` supplies the common player layout with sender/message component placeholders; translations may reorder them. Free player text must remain unparsed.
 
 Three entry points, and the difference between them is only who is talking:
 
@@ -236,3 +244,18 @@ reverse is not, which is why the compile target is deliberately old.
 - **A translation service.** Rendering happens per player, per message, in the chat
   path. A network call there buys nothing that a few kilobytes of properties files in
   memory do not already give.
+
+### Context and level
+
+`SystemCategory` describes the subject (`GENERAL`, `FRIENDS`, `PARTY`, `MATCH`, `STORY`). `SystemLevel` describes its semantic status (`INFO`, `SUCCESS`, `WARNING`, `ERROR`). Typed keys default to `GENERAL` and `INFO`; ordinary `MessageKey` implementations remain supported.
+
+A failed friend operation therefore uses `FRIENDS` with `ERROR`: the visible label stays “Friends”, while the renderer uses the error token for the label. It never infers metadata from message wording or body colours. The body component and its events/styles remain intact. Default layouts show `<category>`; translations can additionally place the localized `<level>` placeholder. Both text and graphical layouts use the same metadata.
+
+```kotlin
+enum class FriendsMessage(override val id: String, override val level: SystemLevel) : SystemMessageKey {
+    LIST_FULL("friends.list-full", SystemLevel.ERROR);
+    override val category = SystemCategory.FRIENDS
+}
+```
+
+The new chat API is still unreleased; its consumer PRs migrate with it. Existing published `Translations.forBundle` factories are unchanged.

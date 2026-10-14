@@ -40,6 +40,7 @@ private constructor(
     private val miniMessage: MiniMessage,
     private val localeResolver: LocaleResolver,
     private val prefix: Prefix,
+    private val systemRenderer: SystemMessageRenderer = SystemMessageRenderer.TEXT_ONLY,
 ) {
 
     private val warnedMissing = ConcurrentHashMap.newKeySet<String>()
@@ -74,7 +75,26 @@ private constructor(
      * point.
      */
     fun send(audience: Audience, key: MessageKey, vararg args: Pair<String, Any>) {
-        audience.sendMessage(prefix.applyTo(render(key, localeOf(audience), *args)))
+        val locale = localeOf(audience)
+        val message = render(key, locale, *args)
+        sendRendered(audience, key, message, locale)
+    }
+
+    /** Sends already-rendered rich system content through the same recipient-specific formatter. */
+    fun sendRendered(audience: Audience, key: MessageKey, message: Component) {
+        sendRendered(audience, key, message, localeOf(audience))
+    }
+
+    private fun sendRendered(
+        audience: Audience,
+        key: MessageKey,
+        message: Component,
+        locale: Locale,
+    ) {
+        audience.sendMessage(
+            if (prefix === Prefix.GROUNDS) systemRenderer.render(audience, key, message, locale)
+            else prefix.applyTo(message)
+        )
     }
 
     /**
@@ -150,6 +170,28 @@ private constructor(
             prefix: Prefix = Prefix.GROUNDS,
         ): Translations =
             Translations(baseName, classLoader, fallback, miniMessage, localeResolver, prefix)
+
+        /** Host-specific system rendering without changing existing forBundle JVM signatures. */
+        @JvmStatic
+        @JvmOverloads
+        fun forBundleWithSystemRenderer(
+            baseName: String,
+            classLoader: ClassLoader,
+            systemRenderer: SystemMessageRenderer,
+            fallback: Locale = Locale.ENGLISH,
+            localeResolver: LocaleResolver = LocaleResolver.FROM_AUDIENCE,
+            miniMessage: MiniMessage = PALETTE_MINI_MESSAGE,
+            prefix: Prefix = Prefix.GROUNDS,
+        ): Translations =
+            Translations(
+                baseName,
+                classLoader,
+                fallback,
+                miniMessage,
+                localeResolver,
+                prefix,
+                systemRenderer,
+            )
 
         /**
          * MiniMessage with the Grounds semantic colours added.
