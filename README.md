@@ -60,7 +60,7 @@ book pages and anything else that is not chat.
 `send` puts the platform's tag in front of the line:
 
 ```
-[Grounds] You are now friends with Ada!
+[Grounds] Friends › You are now friends with Ada!
 ```
 
 Nothing at the call site opts in. A plugin conforms by doing nothing, which is the only
@@ -68,10 +68,13 @@ version of "everyone follows the house style" that survives the tenth plugin —
 alternative is a `PREFIX` constant per repo, which is how chat ended up with `[Party]`,
 `[STAFF]` and nothing at all, all at once.
 
-The tag is brand mint on dark grey brackets, and it is deliberately not configurable per
-plugin. Colour never bleeds into the message: the line is an uncoloured root with the
-prefix and the message as siblings, so a `<red>` error stays red and an uncoloured
-message does not turn mint.
+The shared layout bundle controls the brand, localized category, separators and placeholder order. The renderer supplies gold (`#E7B84B`), secondary (`#C1B9AA`) and explicit status colours. Message components retain their click/hover events and colours.
+
+Implement `SystemMessageKey` to give a key an explicit `SystemCategory`. Existing `MessageKey` implementations retain `INFO` output. `render` stays unprefixed for menus and connection dialogs.
+
+`forBundleWithSystemRenderer` accepts a host callback without changing existing `forBundle` JVM signatures. Use `SystemMessageRenderer.withLogoReadiness` with verified readiness for the actual recipient. Without that callback the output is text only. Do not infer readiness from a pack being sent or accepted.
+
+`sendRendered` wraps already assembled rich content with the same recipient-specific system header. `ChatLayouts.player` supplies the common player layout with sender/message component placeholders; translations may reorder them. Free player text must remain unparsed.
 
 Three entry points, and the difference between them is only who is talking:
 

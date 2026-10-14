@@ -19,24 +19,16 @@ class Prefix private constructor(private val component: Component) {
 
     /** [message] with this prefix in front of it, or [message] itself for [NONE]. */
     fun applyTo(message: Component): Component =
-        if (component == Component.empty()) message
+        if (this === GROUNDS) SystemMessages.format(message)
+        else if (component == Component.empty()) message
         else Component.empty().append(component).append(message)
 
     companion object {
         /**
-         * `[Grounds] ` — every system message on every platform.
-         *
-         * The word is [Palette.ACCENT_DEEP], not [Palette.ACCENT]: the bright mint means "you can
-         * click this", and a tag on every single line would spend it on decoration. Deliberately
-         * not configurable per plugin — a prefix each plugin picks is the state this replaced.
+         * Shared branded category header from the system layout bundle. [SystemMessages] owns its
+         * visual tokens and [Translations] selects the recipient locale.
          */
-        @JvmField
-        val GROUNDS: Prefix =
-            Prefix(
-                Component.text("[", Palette.TEXT_FAINT)
-                    .append(Component.text("Grounds", Palette.ACCENT_DEEP))
-                    .append(Component.text("] ", Palette.TEXT_FAINT))
-            )
+        @JvmField val GROUNDS: Prefix = Prefix(Component.empty())
 
         /**
          * No prefix.
