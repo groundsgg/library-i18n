@@ -29,7 +29,7 @@ class SystemMetadataTest {
             val label = category.label(Locale.ENGLISH)
             for ((level, colour) in colours) {
                 val line = SystemMessages.format(content, category, level = level)
-                assertEquals("[Grounds] $label › Retry", plain.serialize(line))
+                assertEquals("[Grounds] $label | Retry", plain.serialize(line))
                 assertEquals(TextColor.color(colour), findLabel(line, label)?.color())
                 assertSame(content, line.children().last())
             }
@@ -56,7 +56,7 @@ class SystemMetadataTest {
                     Component.text("Hello"),
                     Locale.GERMAN,
                 )
-            assertEquals("[Grounds] Allgemein › Hello", plain.serialize(line))
+            assertEquals("[Grounds] Allgemein | Hello", plain.serialize(line))
         }
     }
 
@@ -87,7 +87,7 @@ class SystemMetadataTest {
                 SystemMessageRenderer.withLogoReadiness { true },
             )) {
             val line = renderer.render(Audience.empty(), key, content, Locale.GERMAN)
-            assertTrue(plain.serialize(line).contains("Freunde › Hello"))
+            assertTrue(plain.serialize(line).contains("Freunde | Hello"))
             assertEquals(TextColor.color(0xF28B82), findLabel(line, "Freunde")?.color())
             assertSame(content, line.children().last())
         }

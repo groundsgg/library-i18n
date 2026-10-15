@@ -107,14 +107,14 @@ class TranslationsTest {
     fun `send picks the language the audience announced`() {
         val audience = FakeAudience(Locale.GERMANY)
         translations.send(audience, TestMessage.GREETING, "player" to "Ada")
-        assertEquals(listOf("[Grounds] Allgemein › Hallo, Ada!"), audience.sent.map(::plain))
+        assertEquals(listOf("[Grounds] Allgemein | Hallo, Ada!"), audience.sent.map(::plain))
     }
 
     @Test
     fun `an audience with no locale gets the fallback`() {
         val audience = FakeAudience(null)
         translations.send(audience, TestMessage.GREETING, "player" to "Ada")
-        assertEquals(listOf("[Grounds] General › Hello, Ada!"), audience.sent.map(::plain))
+        assertEquals(listOf("[Grounds] General | Hello, Ada!"), audience.sent.map(::plain))
     }
 
     @Test
@@ -127,7 +127,7 @@ class TranslationsTest {
             )
         val audience = FakeAudience(Locale.ENGLISH)
         overriding.send(audience, TestMessage.GREETING, "player" to "Ada")
-        assertEquals(listOf("[Grounds] Allgemein › Hallo, Ada!"), audience.sent.map(::plain))
+        assertEquals(listOf("[Grounds] Allgemein | Hallo, Ada!"), audience.sent.map(::plain))
     }
 
     @Test
