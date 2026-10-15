@@ -40,13 +40,13 @@ class SystemMessagesTest {
                 override val id = "greeting"
             }
         messages.send(audience, key, "player" to "Ada")
-        assertTrue(plain(sent).startsWith("[Grounds] General › "))
+        assertTrue(plain(sent).startsWith("[Grounds] General | "))
         ready = true
         messages.send(audience, key, "player" to "Ada")
-        assertTrue(plain(sent).startsWith("\uE100 · General › "))
+        assertTrue(plain(sent).startsWith("\uE100 · General | "))
         ready = false
         messages.sendRendered(audience, key, Component.text("Bye"))
-        assertEquals("[Grounds] General › Bye", plain(sent))
+        assertEquals("[Grounds] General | Bye", plain(sent))
     }
 
     private fun plain(component: Component) =
@@ -62,7 +62,7 @@ class SystemMessagesTest {
                 locale = Locale.GERMAN,
                 level = SystemLevel.ERROR,
             )
-        assertEquals("[Grounds] Freunde › Retry", plain(line))
+        assertEquals("[Grounds] Freunde | Retry", plain(line))
         assertSame(content, line.children().last())
         assertEquals(content.clickEvent(), line.children().last().clickEvent())
     }
@@ -72,7 +72,7 @@ class SystemMessagesTest {
         val fallback = SystemMessages.format(Component.text("Hello"))
         assertFalse(plain(fallback).any { it.code in 0xE100..0xE108 })
         val graphical = SystemMessages.format(Component.text("Hello"), logoReady = true)
-        assertEquals("\uE100 · General › Hello", plain(graphical))
+        assertEquals("\uE100 · General | Hello", plain(graphical))
         fun hasChatFont(component: Component): Boolean =
             component.font()?.toString() == "grounds:chat" ||
                 component.children().any(::hasChatFont)
@@ -96,7 +96,7 @@ class SystemMessagesTest {
             }
         val messages = Translations.forBundle("gg.grounds.i18n.testmessages", javaClass.classLoader)
         messages.send(audience, key, "player" to "<red>Ada</red>")
-        assertEquals("[Grounds] Party › Hello, <red>Ada</red>!", plain(sent))
+        assertEquals("[Grounds] Party | Hello, <red>Ada</red>!", plain(sent))
         assertEquals("Hello, Ada!", plain(messages.render(key, Locale.ENGLISH, "player" to "Ada")))
     }
 }
