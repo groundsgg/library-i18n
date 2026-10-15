@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/groundsgg/library-i18n/compare/v0.4.0...v0.4.1) (2026-10-15)
+
+
+### Bug Fixes
+
+* **chat:** omit duplicate brand beside the system logo ([#12](https://github.com/groundsgg/library-i18n/issues/12)) ([2eeb98c](https://github.com/groundsgg/library-i18n/commit/2eeb98c49596acdd597065ce03d9ba0e63c7b731))
+
 ## [0.4.0](https://github.com/groundsgg/library-i18n/compare/v0.3.0...v0.4.0) (2026-10-14)
 
 
