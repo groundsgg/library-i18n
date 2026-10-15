@@ -43,7 +43,7 @@ class SystemMessagesTest {
         assertTrue(plain(sent).startsWith("[Grounds] General › "))
         ready = true
         messages.send(audience, key, "player" to "Ada")
-        assertTrue(plain(sent).startsWith("\uE100 General › "))
+        assertTrue(plain(sent).startsWith("\uE100 · General › "))
         ready = false
         messages.sendRendered(audience, key, Component.text("Bye"))
         assertEquals("[Grounds] General › Bye", plain(sent))
@@ -72,7 +72,7 @@ class SystemMessagesTest {
         val fallback = SystemMessages.format(Component.text("Hello"))
         assertFalse(plain(fallback).any { it.code in 0xE100..0xE108 })
         val graphical = SystemMessages.format(Component.text("Hello"), logoReady = true)
-        assertEquals("\uE100 General › Hello", plain(graphical))
+        assertEquals("\uE100 · General › Hello", plain(graphical))
         fun hasChatFont(component: Component): Boolean =
             component.font()?.toString() == "grounds:chat" ||
                 component.children().any(::hasChatFont)
