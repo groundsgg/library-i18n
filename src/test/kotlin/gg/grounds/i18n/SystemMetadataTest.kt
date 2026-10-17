@@ -3,7 +3,6 @@ package gg.grounds.i18n
 import java.util.Locale
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
@@ -16,10 +15,10 @@ class SystemMetadataTest {
     private val plain = PlainTextComponentSerializer.plainText()
 
     @Test
-    fun `every context supports every level without changing its label or message subtree`() {
+    fun `every context supports every level without changing its label or rich message content`() {
         val colours =
             mapOf(
-                SystemLevel.INFO to 0xC1B9AA,
+                SystemLevel.INFO to 0xF3F0EA,
                 SystemLevel.SUCCESS to 0xA4CE87,
                 SystemLevel.WARNING to 0xF0C36A,
                 SystemLevel.ERROR to 0xF28B82,
@@ -30,8 +29,15 @@ class SystemMetadataTest {
             for ((level, colour) in colours) {
                 val line = SystemMessages.format(content, category, level = level)
                 assertEquals("[Grounds] $label | Retry", plain.serialize(line))
-                assertEquals(TextColor.color(colour), findLabel(line, label)?.color())
-                assertSame(content, line.children().last())
+                assertEquals(
+                    SystemMessageColors.category(category),
+                    findLabel(line, label)?.color(),
+                )
+                assertEquals(TextColor.color(colour), line.children().last().color())
+                assertEquals(
+                    content.color(SystemMessageColors.level(level)),
+                    line.children().last(),
+                )
             }
         }
     }
@@ -88,8 +94,8 @@ class SystemMetadataTest {
             )) {
             val line = renderer.render(Audience.empty(), key, content, Locale.GERMAN)
             assertTrue(plain.serialize(line).contains("Freunde | Hello"))
-            assertEquals(TextColor.color(0xF28B82), findLabel(line, "Freunde")?.color())
-            assertSame(content, line.children().last())
+            assertEquals(TextColor.color(0x79C9BE), findLabel(line, "Freunde")?.color())
+            assertEquals(content.color(TextColor.color(0xF28B82)), line.children().last())
         }
     }
 

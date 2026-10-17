@@ -26,7 +26,13 @@ object SystemMessages {
         locale: Locale = Locale.ENGLISH,
         level: SystemLevel = SystemLevel.INFO,
     ): Component =
-        formatNamed(message, Component.text(category.label(locale)), logoReady, locale, level)
+        formatNamed(
+            message,
+            Component.text(category.label(locale), SystemMessageColors.category(category)),
+            logoReady,
+            locale,
+            level,
+        )
 
     /** A game/area context shares the exact same template, status treatment and pack gating. */
     @JvmStatic
@@ -38,13 +44,7 @@ object SystemMessages {
         locale: Locale = Locale.ENGLISH,
         level: SystemLevel = SystemLevel.INFO,
     ): Component {
-        val levelColor =
-            when (level) {
-                SystemLevel.SUCCESS -> TextColor.color(0xA4CE87)
-                SystemLevel.WARNING -> TextColor.color(0xF0C36A)
-                SystemLevel.ERROR -> TextColor.color(0xF28B82)
-                else -> SECONDARY
-            }
+        val levelColor = SystemMessageColors.level(level)
         val bundle =
             ResourceBundle.getBundle(
                 "gg.grounds.i18n.system",
@@ -65,12 +65,17 @@ object SystemMessages {
                         if (logoReady) "layout.graphical-prefix" else "layout.text-prefix"
                     ),
                     Placeholder.component("brand", Component.text(bundle.getString("brand"), GOLD)),
-                    Placeholder.component("category", category.colorIfAbsent(levelColor)),
+                    Placeholder.component(
+                        "category",
+                        category.colorIfAbsent(SystemMessageColors.category(SystemCategory.GENERAL)),
+                    ),
                     Placeholder.component("level", Component.text(level.label(locale), levelColor)),
                     Placeholder.component("logo", if (logoReady) logo else Component.empty()),
                 )
                 .colorIfAbsent(SECONDARY)
-        // Keep the caller's subtree intact: click/hover events and explicit colours survive.
-        return Component.empty().append(prefix).append(message)
+        // Level owns the body base color, including legacy bundle root colors. Explicit child
+        // highlights, fonts and interaction survive; recoloring the whole subtree would tint
+        // assets.
+        return Component.empty().append(prefix).append(message.color(levelColor))
     }
 }
