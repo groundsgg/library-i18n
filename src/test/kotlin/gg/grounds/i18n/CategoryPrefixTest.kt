@@ -7,7 +7,6 @@ import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextComponent
 import net.kyori.adventure.text.TranslatableComponent
 import net.kyori.adventure.text.format.TextColor
-import net.kyori.adventure.text.format.TextDecoration
 import net.kyori.adventure.text.minimessage.MiniMessage
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
 
@@ -32,25 +31,16 @@ class CategoryPrefixTest {
     }
 
     @Test
-    fun `renders the category bold in accent-deep with a faint separator`() {
+    fun `category names use the shared system layout rather than a private header`() {
         val line = Prefix.category("SurvivalGames").applyTo(Component.text("Grace ends."))
-        assertEquals("SurvivalGames › Grace ends.", plain(line))
-        assertEquals(
-            "<bold><#38b4ab>SurvivalGames</#38b4ab></bold> <#bcb4ad>›</#bcb4ad> " +
-                "<#d5cec6>Grace ends.",
-            mini(line),
-        )
+        assertEquals("[Grounds] SurvivalGames | Grace ends.", plain(line))
     }
 
     @Test
-    fun `the header carries the palette colours and bold only on the name`() {
-        val header = Prefix.category("SurvivalGames").applyTo(Component.text("x")).children()[0]
-        val (name, space, separator) = header.children()
-        assertEquals(Palette.ACCENT_DEEP, name.color())
-        assertEquals(TextDecoration.State.TRUE, name.decoration(TextDecoration.BOLD))
-        assertEquals(TextDecoration.State.NOT_SET, space.decoration(TextDecoration.BOLD))
-        assertEquals(Palette.TEXT_FAINT, separator.color())
-        assertEquals(TextDecoration.State.NOT_SET, separator.decoration(TextDecoration.BOLD))
+    fun `known system categories are localized when a locale is supplied`() {
+        val line =
+            Prefix.category("Friends").applyTo(Component.text("Retry"), java.util.Locale.GERMAN)
+        assertEquals("[Grounds] Freunde | Retry", plain(line))
     }
 
     @Test
@@ -73,10 +63,12 @@ class CategoryPrefixTest {
     fun `a translatable name gets the category styling`() {
         val name = Component.translatable("grounds.category.queue")
         val line = Prefix.category(name).applyTo(Component.text("Joined."))
-        val rendered = line.children()[0].children()[0]
-        assertEquals("grounds.category.queue", (rendered as TranslatableComponent).key())
-        assertEquals(Palette.ACCENT_DEEP, rendered.color())
-        assertEquals(TextDecoration.State.TRUE, rendered.decoration(TextDecoration.BOLD))
+        fun descendants(node: Component): Sequence<Component> = sequence {
+            yield(node)
+            node.children().forEach { yieldAll(descendants(it)) }
+        }
+        val rendered = descendants(line).filterIsInstance<TranslatableComponent>().single()
+        assertEquals("grounds.category.queue", rendered.key())
     }
 
     @Test
@@ -101,7 +93,56 @@ class CategoryPrefixTest {
             },
             Component.text("Fight!"),
         )
-        assertEquals("SurvivalGames › Fight!", plain(sent.single()))
+        assertEquals("[Grounds] SurvivalGames | Fight!", plain(sent.single()))
         assertEquals(Palette.TEXT_MUTED, sent.single().children()[1].color())
+    }
+
+    @Test
+    fun `game category follows verified per-send readiness and keeps its status`() {
+        var ready = false
+        val sent = mutableListOf<Component>()
+        val audience =
+            object : Audience {
+                override fun sendMessage(message: Component) {
+                    sent += message
+                }
+            }
+        val translations =
+            Translations.forBundleWithSystemRenderer(
+                "gg.grounds.i18n.testmessages",
+                javaClass.classLoader,
+                SystemMessageRenderer.withLogoReadiness { ready },
+                prefix = Prefix.category("GetDown"),
+            )
+        val key =
+            object : SystemMessageKey {
+                override val id = "greeting"
+                override val category = SystemCategory.MATCH
+                override val level = SystemLevel.ERROR
+            }
+        val body =
+            Component.text("Retry")
+                .clickEvent(net.kyori.adventure.text.event.ClickEvent.suggestCommand("/retry"))
+        translations.sendRendered(audience, key, body)
+        ready = true
+        translations.sendRendered(audience, key, body)
+        ready = false
+        translations.sendRendered(audience, key, body)
+        assertEquals(
+            listOf(
+                "[Grounds] GetDown | Retry",
+                "\uE100 · GetDown | Retry",
+                "[Grounds] GetDown | Retry",
+            ),
+            sent.map(::plain),
+        )
+        sent.forEach { line ->
+            assertEquals(TextColor.color(0xF28B82), colourOf(line, "GetDown"))
+            assertEquals(body.clickEvent(), line.children().last().clickEvent())
+        }
+        assertEquals(
+            "Hello, Ada!",
+            plain(translations.render(key, java.util.Locale.ENGLISH, "player" to "Ada")),
+        )
     }
 }

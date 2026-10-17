@@ -25,6 +25,18 @@ object SystemMessages {
         logoReady: Boolean = false,
         locale: Locale = Locale.ENGLISH,
         level: SystemLevel = SystemLevel.INFO,
+    ): Component =
+        formatNamed(message, Component.text(category.label(locale)), logoReady, locale, level)
+
+    /** A game/area context shares the exact same template, status treatment and pack gating. */
+    @JvmStatic
+    @JvmOverloads
+    fun formatNamed(
+        message: Component,
+        category: Component,
+        logoReady: Boolean = false,
+        locale: Locale = Locale.ENGLISH,
+        level: SystemLevel = SystemLevel.INFO,
     ): Component {
         val levelColor =
             when (level) {
@@ -53,10 +65,7 @@ object SystemMessages {
                         if (logoReady) "layout.graphical-prefix" else "layout.text-prefix"
                     ),
                     Placeholder.component("brand", Component.text(bundle.getString("brand"), GOLD)),
-                    Placeholder.component(
-                        "category",
-                        Component.text(category.label(locale), levelColor),
-                    ),
+                    Placeholder.component("category", category.colorIfAbsent(levelColor)),
                     Placeholder.component("level", Component.text(level.label(locale), levelColor)),
                     Placeholder.component("logo", if (logoReady) logo else Component.empty()),
                 )

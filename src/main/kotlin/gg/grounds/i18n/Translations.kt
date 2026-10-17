@@ -92,8 +92,9 @@ private constructor(
         locale: Locale,
     ) {
         audience.sendMessage(
-            if (prefix === Prefix.GROUNDS) systemRenderer.render(audience, key, message, locale)
-            else prefix.applyTo(message)
+            if (prefix === Prefix.GROUNDS || prefix.categoryName != null)
+                systemRenderer.render(audience, prefix.key(key), prefix.prepare(message), locale)
+            else prefix.applyTo(message, locale)
         )
     }
 
