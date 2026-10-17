@@ -36,7 +36,7 @@ class CategoryPrefixTest {
         val line = Prefix.category("SurvivalGames").applyTo(Component.text("Grace ends."))
         assertEquals("SurvivalGames › Grace ends.", plain(line))
         assertEquals(
-            "<#38b4ab><bold>SurvivalGames</bold></#38b4ab> <#bcb4ad>›</#bcb4ad> " +
+            "<bold><#38b4ab>SurvivalGames</#38b4ab></bold> <#bcb4ad>›</#bcb4ad> " +
                 "<#d5cec6>Grace ends.",
             mini(line),
         )
