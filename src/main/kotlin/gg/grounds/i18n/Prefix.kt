@@ -21,7 +21,9 @@ private constructor(
             categoryName != null ->
                 SystemMessages.formatNamed(
                     prepare(message),
-                    standardCategory?.let { Component.text(it.label(locale)) } ?: categoryName,
+                    standardCategory?.let {
+                        Component.text(it.label(locale), SystemMessageColors.category(it))
+                    } ?: categoryName,
                     locale = locale,
                 )
             component == Component.empty() -> message
@@ -46,7 +48,7 @@ private constructor(
             Prefix(
                 Component.empty(),
                 Palette.TEXT_MUTED,
-                Component.text(name),
+                Component.text(name, SystemMessageColors.namedCategory(name)),
                 SystemCategory.entries.firstOrNull { it.name.equals(name, ignoreCase = true) },
             )
 

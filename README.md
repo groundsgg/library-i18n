@@ -15,8 +15,9 @@ language — and it decides the language as *English, always*. A German client t
 announced `de_DE` on login gets English anyway, and the only way to change the wording
 is a code change by someone who can build a plugin.
 
-This library separates the three. The call site names a message; the bundle holds the
-wording and the colour, in English and in every language a player can pick.
+This library separates the three. The call site names a message and its semantic level;
+the bundle holds the wording and inline highlights in every supported language.
+The shared renderer supplies fixed context colours and level-dependent system body colours.
 
 ```kotlin
 messages.send(source, SocialMessage.PLAYER_NOT_FOUND)
@@ -44,9 +45,9 @@ enum class SocialMessage(
 Values are MiniMessage:
 
 ```properties
-player.not-found=<red>Player not found.
-friend.request.sent=<green>Friend request sent to <target>.
-friend.request.received=<green><sender> sent you a friend request. <yellow>Use /friend accept <sender> or /friend deny <sender>.
+player.not-found=Player not found.
+friend.request.sent=Friend request sent to <text><target></text>.
+friend.request.received=<text><sender></text> sent you a friend request. Use /friend accept <sender> or /friend deny <sender>.
 ```
 
 **3. Build one `Translations` per plugin** and send through it:
@@ -65,7 +66,7 @@ book pages and anything else that is not chat.
 `send` puts the platform's tag in front of the line:
 
 ```
-[Grounds] Friends › You are now friends with Ada!
+[Grounds] Friends | You are now friends with Ada!
 ```
 
 Nothing at the call site opts in. A plugin conforms by doing nothing, which is the only
@@ -73,7 +74,16 @@ version of "everyone follows the house style" that survives the tenth plugin —
 alternative is a `PREFIX` constant per repo, which is how chat ended up with `[Party]`,
 `[STAFF]` and nothing at all, all at once.
 
-The shared layout bundle controls the brand, localized category, separators and placeholder order. The renderer supplies gold (`#E7B84B`), secondary (`#C1B9AA`) and explicit level colours. Message components retain their click/hover events and colours.
+The shared layout bundle controls the brand, localized category, separators and placeholder order. With verified pack readiness the header is `[Logo] · Friends |`; otherwise it is `[Grounds] Friends |`. The logo stays white and separators use secondary (`#C1B9AA`). Context colours are fixed, independent of level. The level owns the body root colour, including legacy bundle root colours; explicit child highlights, fonts and click/hover events survive.
+
+| Level | Body base colour |
+| --- | --- |
+| `INFO` | warm white `#F3F0EA` |
+| `SUCCESS` | soft green `#A4CE87` |
+| `WARNING` | amber `#F0C36A` |
+| `ERROR` | coral `#F28B82` |
+
+`SystemMessageColors` owns this palette and fixed context colours: General `#C1B9AA`, Friends `#79C9BE`, Party `#B8A0DA`, Match `#8EB8E8`, Story `#E7B84B`. System status must be declared in `SystemMessageKey.level`; it is never inferred from wording, key names or bundle markup.
 
 Implement `SystemMessageKey` to give a key an explicit `SystemCategory`. Existing `MessageKey` implementations use `GENERAL` context with `INFO` level. `render` stays unprefixed for menus and connection dialogs.
 
@@ -102,8 +112,8 @@ prefixed.
 
 ### Category prefix
 
-A game or system area (SurvivalGames, Queue, Party, …) names itself instead of
-`[Grounds]`:
+A game or system area (SurvivalGames, Queue, Party, …) uses a named context in the
+same system header:
 
 ```kotlin
 private val messages =
@@ -116,25 +126,29 @@ private val messages =
 
 ```properties
 grace.ending=The grace period ends in <text><seconds></text> seconds.
-fight.begins=<success>The grace period is over. Fight!
+fight.begins=The grace period is over. Fight!
 ```
 
-`send` renders `SurvivalGames › The grace period ends in 10 seconds.`, i.e.
-`<accent-deep><bold>SurvivalGames</bold></accent-deep> <faint>›</faint> ` in front of the body.
-The body's base colour is `<muted>`, so a bundle line can start with plain text; a line that
-sets its own colour (`<success>…`) keeps it. The category line carries no brand and no logo, and
-`SystemMessageRenderer` is not involved. `Prefix.category(Component)` takes a styled or
-translatable name instead of a string. `sendUnprefixed` and `render` stay bare.
+`send` renders `[Grounds] SurvivalGames | The grace period ends in 10 seconds.`, or
+`[Logo] · SurvivalGames | …` when the host confirms pack readiness. `SystemMessageRenderer`
+handles both forms. The body uses the key's level colour; for example declare a warning
+with `SystemLevel.WARNING` rather than relying on a leading bundle colour tag.
+
+`Prefix.category(String)` selects the fixed palette by stable untranslated context identifier.
+Known game and area identifiers include GetDown, BedWars, Duel, Keystone, SurvivalGames,
+Lobby, Chat and Settings. Unknown identifiers use General sand. `Prefix.category(Component)`
+preserves an explicit context colour, otherwise using sand. `sendUnprefixed` and `render`
+stay bare and retain their authored colours.
 
 ### Colour comes from the palette, not from taste
 
-Bundle values are MiniMessage, so a translator picks the colour. Left alone that means
+Bundle values are MiniMessage, so a translator can add inline highlights. Left alone that means
 `<red>`, `<green>`, `<gray>` — sixteen colours from 2011 that have nothing to do with the
 Grounds design tokens. `Translations` therefore renders with the semantic tags added:
 
 ```properties
-player.not-found=<danger>Player not found.
-friend.request.sent=<success>Friend request sent to <target>.
+player.not-found=Player not found.
+friend.request.sent=Friend request sent to <text><target></text>.
 friend.list.offline=<muted> (offline)
 ```
 
@@ -205,8 +219,8 @@ like nothing at all to us.
 
 ## Where the strings live
 
-**In the plugin that sends them, not in this library.** This library is runtime code
-only; it ships no bundles.
+**Domain strings live in the plugin that sends them.** This library ships only shared
+layout, context and level labels; plugins own their domain bundles.
 
 The alternative — one central bundle for the whole platform — means every wording fix
 is a release of this library followed by a version bump in every plugin that depends

@@ -4,7 +4,6 @@ import java.util.Locale
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertSame
 import kotlin.test.assertTrue
 import net.kyori.adventure.audience.Audience
 import net.kyori.adventure.text.Component
@@ -63,7 +62,10 @@ class SystemMessagesTest {
                 level = SystemLevel.ERROR,
             )
         assertEquals("[Grounds] Freunde | Retry", plain(line))
-        assertSame(content, line.children().last())
+        assertEquals(
+            content.color(net.kyori.adventure.text.format.TextColor.color(0xF28B82)),
+            line.children().last(),
+        )
         assertEquals(content.clickEvent(), line.children().last().clickEvent())
     }
 

@@ -44,19 +44,19 @@ class CategoryPrefixTest {
     }
 
     @Test
-    fun `a plain body gets muted as its base colour`() {
+    fun `an informational body gets warm white as its base colour`() {
         val body = palette.deserialize("The grace period ends in <text>10</text> seconds.")
         val line = Prefix.category("SurvivalGames").applyTo(body)
-        assertEquals(Palette.TEXT_MUTED, colourOf(line, "The grace period ends in"))
+        assertEquals(Palette.TEXT, colourOf(line, "The grace period ends in"))
         assertEquals(Palette.TEXT, colourOf(line, "10"))
-        assertEquals(Palette.TEXT_MUTED, colourOf(line, "seconds."))
+        assertEquals(Palette.TEXT, colourOf(line, "seconds."))
     }
 
     @Test
-    fun `a body with its own colour keeps it`() {
+    fun `legacy body base color follows the default informational level`() {
         val body = palette.deserialize("<success>You won!")
         val line = Prefix.category("SurvivalGames").applyTo(body)
-        assertEquals(Palette.SUCCESS, colourOf(line, "You won!"))
+        assertEquals(Palette.TEXT, colourOf(line, "You won!"))
     }
 
     @Test
@@ -94,7 +94,7 @@ class CategoryPrefixTest {
             Component.text("Fight!"),
         )
         assertEquals("[Grounds] SurvivalGames | Fight!", plain(sent.single()))
-        assertEquals(Palette.TEXT_MUTED, sent.single().children()[1].color())
+        assertEquals(Palette.TEXT, sent.single().children()[1].color())
     }
 
     @Test
@@ -137,7 +137,7 @@ class CategoryPrefixTest {
             sent.map(::plain),
         )
         sent.forEach { line ->
-            assertEquals(TextColor.color(0xF28B82), colourOf(line, "GetDown"))
+            assertEquals(TextColor.color(0xDDA16F), colourOf(line, "GetDown"))
             assertEquals(body.clickEvent(), line.children().last().clickEvent())
         }
         assertEquals(

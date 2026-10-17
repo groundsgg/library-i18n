@@ -25,10 +25,10 @@ class PrefixTest {
     }
 
     @Test
-    fun `the message keeps its own colour`() {
+    fun `the system level owns the body base colour`() {
         val message = Component.text("Player not found.", NamedTextColor.RED)
         val line = Prefix.GROUNDS.applyTo(message)
-        assertEquals(NamedTextColor.RED, line.children()[1].color())
+        assertEquals(Palette.TEXT, line.children()[1].color())
     }
 
     /**

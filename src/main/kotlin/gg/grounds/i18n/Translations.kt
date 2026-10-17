@@ -25,7 +25,8 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
  * messages.send(player, SocialMessage.FRIEND_REQUEST_SENT, "target" to target.username)
  * ```
  *
- * Bundle values are MiniMessage, so colour lives with the translator rather than in the call site.
+ * Bundle values are MiniMessage. Inline highlights live with the translator; system body base
+ * colours follow the key's level, and context colours come from [SystemMessageColors].
  *
  * [send] puts [Prefix.GROUNDS] in front of the line. The three entry points differ only in that:
  * [send] is the platform talking to a player and is prefixed, [sendUnprefixed] is a conversation

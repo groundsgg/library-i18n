@@ -19,5 +19,5 @@ internal class CategoryMessageKey(
         get() = (original as? SystemMessageKey)?.level ?: SystemLevel.INFO
 
     fun label(locale: Locale): Component =
-        standard?.let { Component.text(it.label(locale)) } ?: name
+        standard?.let { Component.text(it.label(locale), SystemMessageColors.category(it)) } ?: name
 }

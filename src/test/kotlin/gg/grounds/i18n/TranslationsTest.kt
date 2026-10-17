@@ -155,6 +155,8 @@ class TranslationsTest {
     fun `the prefix does not bleed its colour into the message`() {
         val audience = FakeAudience(Locale.GERMAN)
         translations.send(audience, TestMessage.GREETING, "player" to "Ada")
-        assertTrue(hasColour(audience.sent.single(), NamedTextColor.GREEN))
+        val rendered = audience.sent.single()
+        assertEquals(null, rendered.color())
+        assertEquals(Palette.TEXT, rendered.children().last().color())
     }
 }
