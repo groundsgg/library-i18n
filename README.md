@@ -155,20 +155,20 @@ friend.list.offline=<muted> (offline)
 | Tag | Token | Use |
 | --- | --- | --- |
 | `<text>` | `--text` | body text |
-| `<muted>` | `--text-muted` | the message itself, hints, anything subordinate |
+| `<muted>` | `--text-muted` | secondary inline hints and subordinate values |
 | `<faint>` | `--text-faint` | brackets, punctuation |
 | `<accent>` | `--accent` | **interactive text only** — links, click-to-run |
-| `<accent-deep>` | `--accent-deep` | static brand marks, e.g. the `[Grounds]` tag |
+| `<accent-deep>` | `--accent-deep` | subdued accents in authored content |
 | `<success>` `<warning>` `<danger>` `<info>` | state colours | what they say |
 
 These are the **dark** set of tokens. There is no light set here: a client cannot tell us
 what its chat background looks like, and over a Minecraft world there is one right answer.
 
-Two consequences worth knowing. `<danger>` is a warm salmon, not a vivid red — over a
-near-black ground the state colours sit at L 0.80, the lowest lightness at which all four
-still clear APCA Lc 60, and sRGB has nothing redder up there. And `<accent>` is reserved
-for text you can click; the `[Grounds]` tag uses `<accent-deep>` instead, because an
-accent on every single line is wallpaper and then nothing reads as the thing to act on.
+These tags remain available for authored UI and conversation styles and deliberate inline
+highlights. System header colours and the body base follow `SystemMessageColors` instead:
+the text brand is gold, INFO is warm white, and the other levels use the Mini-CD status
+colours listed above. A leading colour tag cannot override a system message's level.
+Use explicit child components for deliberate highlights and keep `<accent>` for actions.
 
 The standard tags still parse, so no existing bundle breaks. What changed is that `<red>`
 now reads as a deviation sitting next to `<danger>`, which is the only enforcement that

@@ -14,7 +14,7 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
  * The colours are exposed twice, on purpose:
  * - as [TextColor] constants, for code that builds a [net.kyori.adventure.text.Component] by hand;
  * - as MiniMessage tags via [TAGS], wired into the instance [Translations] renders with, so a
- *   bundle writes `<danger>Player not found.` and gets the palette without knowing a hex code.
+ *   bundle uses semantic tags for authored UI styles and inline highlights without hex codes.
  *
  * The standard MiniMessage colours (`<red>`, `<gray>`, …) still parse — nothing forbids them. What
  * changes is that they now read as a deviation next to `<danger>` and `<muted>`, which is the only
@@ -22,9 +22,9 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver
  *
  * ### One colour, one meaning
  *
- * [ACCENT] is the interactive colour: text you can click. It is deliberately **not** the colour of
- * the `[Grounds]` tag, which every system line carries — an accent on every line is wallpaper, and
- * then nothing reads as the thing to act on. The tag uses [ACCENT_DEEP], the subdued sibling.
+ * [ACCENT] is the interactive colour: text you can click. System headers and body base colours
+ * follow the separate Minecraft Mini-CD palette in [SystemMessageColors]. These tags remain
+ * available for deliberate child highlights and unprefixed UI or conversation styles.
  *
  * [DANGER] is a warm salmon rather than a vivid red. Over a near-black ground an accent has to be
  * light to be legible, and at that lightness sRGB has nothing redder that still clears APCA Lc 60.
@@ -34,7 +34,7 @@ object Palette {
     /** Body text. `--text` */
     @JvmField val TEXT: TextColor = hex("#f3f0ea")
 
-    /** Secondary text — the chat message itself, hints, anything subordinate. `--text-muted` */
+    /** Secondary inline hints and subordinate values. `--text-muted` */
     @JvmField val TEXT_MUTED: TextColor = hex("#d5cec6")
 
     /** Punctuation and brackets; the quietest thing still meant to be read. `--text-faint` */
@@ -43,7 +43,7 @@ object Palette {
     /** Brand mint. Interactive text only — links, click-to-run. `--accent` */
     @JvmField val ACCENT: TextColor = hex("#3de6db")
 
-    /** The subdued mint, for static brand marks such as the `[Grounds]` tag. `--accent-deep` */
+    /** Subdued mint for authored accents. `--accent-deep` */
     @JvmField val ACCENT_DEEP: TextColor = hex("#38b4ab")
 
     /** Something worked. `--success` */
