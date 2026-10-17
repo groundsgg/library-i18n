@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.4](https://github.com/groundsgg/library-i18n/compare/v0.4.3...v0.4.4) (2026-10-17)
+
+
+### Bug Fixes
+
+* **i18n:** separate context colors from message level colors ([#19](https://github.com/groundsgg/library-i18n/issues/19)) ([69c33f5](https://github.com/groundsgg/library-i18n/commit/69c33f52f4c4d868653993d2f4c529eeef9fd533))
+
 ## [0.4.3](https://github.com/groundsgg/library-i18n/compare/v0.4.2...v0.4.3) (2026-10-17)
 
 
