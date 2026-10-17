@@ -100,6 +100,32 @@ Which lines are conversations is `plugin-chat`'s call, not each plugin's: it own
 channels and defines their shapes. Everything else is the platform speaking and is
 prefixed.
 
+### Category prefix
+
+A game or system area (SurvivalGames, Queue, Party, …) names itself instead of
+`[Grounds]`:
+
+```kotlin
+private val messages =
+    Translations.forBundle(
+        "gg.grounds.survivalgames.messages",
+        javaClass.classLoader,
+        prefix = Prefix.category("SurvivalGames"),
+    )
+```
+
+```properties
+grace.ending=The grace period ends in <text><seconds></text> seconds.
+fight.begins=<success>The grace period is over. Fight!
+```
+
+`send` renders `SurvivalGames › The grace period ends in 10 seconds.`, i.e.
+`<accent-deep><bold>SurvivalGames</bold></accent-deep> <faint>›</faint> ` in front of the body.
+The body's base colour is `<muted>`, so a bundle line can start with plain text; a line that
+sets its own colour (`<success>…`) keeps it. The category line carries no brand and no logo, and
+`SystemMessageRenderer` is not involved. `Prefix.category(Component)` takes a styled or
+translatable name instead of a string. `sendUnprefixed` and `render` stay bare.
+
 ### Colour comes from the palette, not from taste
 
 Bundle values are MiniMessage, so a translator picks the colour. Left alone that means
