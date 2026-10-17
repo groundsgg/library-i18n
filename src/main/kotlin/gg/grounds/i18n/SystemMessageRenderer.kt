@@ -13,23 +13,29 @@ fun interface SystemMessageRenderer {
         @JvmStatic
         fun withLogoReadiness(isReady: (Audience) -> Boolean): SystemMessageRenderer =
             SystemMessageRenderer { audience, key, message, locale ->
-                SystemMessages.format(
-                    message,
-                    (key as? SystemMessageKey)?.category ?: SystemCategory.GENERAL,
-                    logoReady = isReady(audience),
-                    locale = locale,
-                    level = (key as? SystemMessageKey)?.level ?: SystemLevel.INFO,
-                )
+                format(key, message, locale, isReady(audience))
             }
 
         @JvmField
         val TEXT_ONLY = SystemMessageRenderer { _, key, message, locale ->
-            SystemMessages.format(
-                message,
-                (key as? SystemMessageKey)?.category ?: SystemCategory.GENERAL,
-                locale = locale,
-                level = (key as? SystemMessageKey)?.level ?: SystemLevel.INFO,
-            )
+            format(key, message, locale, false)
         }
+
+        private fun format(
+            key: MessageKey,
+            message: Component,
+            locale: Locale,
+            ready: Boolean,
+        ): Component =
+            if (key is CategoryMessageKey)
+                SystemMessages.formatNamed(message, key.label(locale), ready, locale, key.level)
+            else
+                SystemMessages.format(
+                    message,
+                    (key as? SystemMessageKey)?.category ?: SystemCategory.GENERAL,
+                    ready,
+                    locale,
+                    (key as? SystemMessageKey)?.level ?: SystemLevel.INFO,
+                )
     }
 }
