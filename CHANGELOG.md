@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.3](https://github.com/groundsgg/library-i18n/compare/v0.4.2...v0.4.3) (2026-10-17)
+
+
+### Bug Fixes
+
+* **i18n:** share the system layout with named categories ([#18](https://github.com/groundsgg/library-i18n/issues/18)) ([c45ec38](https://github.com/groundsgg/library-i18n/commit/c45ec384e605303df2484f3da623aeb494783b2b))
+
 ## [0.4.2](https://github.com/groundsgg/library-i18n/compare/v0.4.1...v0.4.2) (2026-10-15)
 
 
