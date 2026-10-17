@@ -1,6 +1,8 @@
 package gg.grounds.i18n
 
 import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.format.TextColor
+import net.kyori.adventure.text.format.TextDecoration
 
 /**
  * The tag in front of a line the platform says to a player.
@@ -15,13 +17,17 @@ import net.kyori.adventure.text.Component
  * is *players talking* — chat lines, private messages, staff chat. Those are conversations and are
  * shaped by whoever owns the channel, which today is `plugin-chat`.
  */
-class Prefix private constructor(private val component: Component) {
+class Prefix
+private constructor(private val component: Component, private val bodyColour: TextColor? = null) {
 
     /** [message] with this prefix in front of it, or [message] itself for [NONE]. */
     fun applyTo(message: Component): Component =
         if (this === GROUNDS) SystemMessages.format(message)
         else if (component == Component.empty()) message
-        else Component.empty().append(component).append(message)
+        else
+            Component.empty()
+                .append(component)
+                .append(bodyColour?.let(message::colorIfAbsent) ?: message)
 
     companion object {
         /**
@@ -46,5 +52,34 @@ class Prefix private constructor(private val component: Component) {
          * stop.
          */
         @JvmStatic fun of(component: Component): Prefix = Prefix(component)
+
+        /**
+         * A game or system-area line: `SurvivalGames › The grace period ends in 10 seconds.`
+         *
+         * [name] is drawn bold in [Palette.ACCENT_DEEP], followed by a [Palette.TEXT_FAINT] `›`.
+         * The body gets [Palette.TEXT_MUTED] as its base colour, so a bundle line can start with
+         * plain text; a body that sets its own colour (`<success>…`) keeps it. No brand and no logo
+         * — the category is the whole tag.
+         */
+        @JvmStatic fun category(name: String): Prefix = category(Component.text(name))
+
+        /**
+         * [category] with a [Component] name, e.g. a [Component.translatable] that the platform
+         * translates per recipient. A colour or bold state the name already sets is kept.
+         */
+        @JvmStatic
+        fun category(name: Component): Prefix =
+            Prefix(
+                Component.empty()
+                    .append(
+                        name
+                            .colorIfAbsent(Palette.ACCENT_DEEP)
+                            .decorationIfAbsent(TextDecoration.BOLD, TextDecoration.State.TRUE)
+                    )
+                    .append(Component.text(" "))
+                    .append(Component.text("›", Palette.TEXT_FAINT))
+                    .append(Component.text(" ")),
+                Palette.TEXT_MUTED,
+            )
     }
 }
