@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.2](https://github.com/groundsgg/library-i18n/compare/v0.4.1...v0.4.2) (2026-10-15)
+
+
+### Bug Fixes
+
+* **chat:** separate system context with a vertical bar ([#14](https://github.com/groundsgg/library-i18n/issues/14)) ([c8a36b3](https://github.com/groundsgg/library-i18n/commit/c8a36b36c34c300a3b186e8ea8e4bfbc33488407))
+
 ## [0.4.1](https://github.com/groundsgg/library-i18n/compare/v0.4.0...v0.4.1) (2026-10-15)
 
 
