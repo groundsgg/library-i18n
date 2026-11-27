@@ -34,6 +34,22 @@ object SystemMessages {
             level,
         )
 
+    @JvmStatic
+    fun format(
+        message: Component,
+        category: SystemCategory,
+        style: SystemPrefixStyle,
+        locale: Locale,
+        level: SystemLevel,
+    ): Component =
+        if (style == SystemPrefixStyle.BADGE) {
+            Component.empty()
+                .append(SystemBadgeGlyphs.prefix(category, locale))
+                .append(message.color(SystemMessageColors.level(level)))
+        } else {
+            format(message, category, style == SystemPrefixStyle.LOGO, locale, level)
+        }
+
     /** A game/area context shares the exact same template, status treatment and pack gating. */
     @JvmStatic
     @JvmOverloads

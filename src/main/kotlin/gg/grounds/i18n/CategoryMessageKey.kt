@@ -7,7 +7,7 @@ import net.kyori.adventure.text.Component
 internal class CategoryMessageKey(
     private val original: MessageKey,
     private val name: Component,
-    private val standard: SystemCategory?,
+    val standard: SystemCategory?,
 ) : SystemMessageKey {
     override val id: String
         get() = original.id
