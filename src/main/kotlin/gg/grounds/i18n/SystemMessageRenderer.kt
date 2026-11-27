@@ -12,28 +12,43 @@ fun interface SystemMessageRenderer {
         /** The host supplies verified recipient readiness; missing capabilities retain text. */
         @JvmStatic
         fun withLogoReadiness(isReady: (Audience) -> Boolean): SystemMessageRenderer =
+            withPrefixStyle {
+                if (isReady(it)) SystemPrefixStyle.LOGO else SystemPrefixStyle.TEXT
+            }
+
+        @JvmStatic
+        fun withPrefixStyle(styleFor: (Audience) -> SystemPrefixStyle): SystemMessageRenderer =
             SystemMessageRenderer { audience, key, message, locale ->
-                format(key, message, locale, isReady(audience))
+                format(key, message, locale, styleFor(audience))
             }
 
         @JvmField
         val TEXT_ONLY = SystemMessageRenderer { _, key, message, locale ->
-            format(key, message, locale, false)
+            format(key, message, locale, SystemPrefixStyle.TEXT)
         }
 
         private fun format(
             key: MessageKey,
             message: Component,
             locale: Locale,
-            ready: Boolean,
+            style: SystemPrefixStyle,
         ): Component =
-            if (key is CategoryMessageKey)
-                SystemMessages.formatNamed(message, key.label(locale), ready, locale, key.level)
+            if (
+                key is CategoryMessageKey &&
+                    (style != SystemPrefixStyle.BADGE || key.standard == null)
+            )
+                SystemMessages.formatNamed(
+                    message,
+                    key.label(locale),
+                    style != SystemPrefixStyle.TEXT,
+                    locale,
+                    key.level,
+                )
             else
                 SystemMessages.format(
                     message,
                     (key as? SystemMessageKey)?.category ?: SystemCategory.GENERAL,
-                    ready,
+                    style,
                     locale,
                     (key as? SystemMessageKey)?.level ?: SystemLevel.INFO,
                 )
