@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/groundsgg/library-i18n/compare/v0.4.4...v0.5.0) (2026-11-27)
+
+
+### Features
+
+* render localized system chat badges ([#22](https://github.com/groundsgg/library-i18n/issues/22)) ([cc2ddc7](https://github.com/groundsgg/library-i18n/commit/cc2ddc77e1179a698c2805575e96998144ac905e))
+
 ## [0.4.4](https://github.com/groundsgg/library-i18n/compare/v0.4.3...v0.4.4) (2026-10-17)
 
 
